@@ -3,7 +3,7 @@ class ProductsController < ApplicationController
 
   # GET /products or /products.json
   def index
-    @products = Product.all
+    @products = Product.all.order(:title)
   end
 
   # GET /products/1 or /products/1.json
@@ -27,6 +27,13 @@ class ProductsController < ApplicationController
           redirect_to @product, notice: 'Product was successfully created.'
         end
         format.json { render :show, status: :created, location: @product }
+        @products = Product.all.order(:title)
+        ActionCable.server.broadcast 'products',
+                                     html:
+                                       render_to_string(
+                                         'store/index',
+                                         layout: false,
+                                       )
       else
         puts @product.errors.full_messages
         format.html { render :new, status: :unprocessable_entity }
@@ -75,5 +82,11 @@ class ProductsController < ApplicationController
   # Only allow a list of trusted parameters through.
   def product_params
     params.require(:product).permit(:title, :description, :image_url, :price)
+  end
+
+  def who_bought
+    @product = Product.find(params[:id])
+    @latest_order = @product.orders.order(:updated_at).last
+    respond_to { |format| format.atom } if stale?(@latest_order)
   end
 end
