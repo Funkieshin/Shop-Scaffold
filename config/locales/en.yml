@@ -93,7 +93,7 @@ en:
 
   store:
     index:
-      title_html: "Your Pragmatic Catalog"
+      title_html: "Product Catalog"
       add_html: "Add to Cart"
 
   layouts:
